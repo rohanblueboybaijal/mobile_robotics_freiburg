@@ -109,10 +109,25 @@ def sample_motion_model(odometry, particles):
     new_particles = []
     
     '''your code here'''
+
+    sigma_delta_rot1 = noise[0]*abs(delta_rot1) + noise[1]*abs(delta_trans)
+    sigma_delta_trans = noise[2]*delta_trans + noise[3]*(abs(delta_rot1) + abs(delta_rot2))
+    sigma_delta_rot2 = noise[0]*abs(delta_rot2) + noise[1]*delta_trans
+
+    for particle in particles:
+        new_particle = dict()
+
+        noisy_delta_rot1 = delta_rot1 + np.random.normal(0, sigma_delta_rot1)
+        noisy_delta_trans = delta_trans + np.random.normal(0, sigma_delta_trans)
+        noisy_delta_rot2 = delta_rot2 + np.random.normal(0, sigma_delta_rot2)
+
+        new_particle['x'] = particle['x'] + noisy_delta_trans*np.cos(particle['theta'] + noisy_delta_rot1)
+        new_particle['y'] = particle['y'] + noisy_delta_trans*np.sin(particle['theta'] + noisy_delta_rot1)
+        new_particle['theta'] = particle['theta'] + noisy_delta_rot1 + noisy_delta_rot2
+
+        new_particles.append(new_particle)
+
     '''***        ***'''
-
-
-
 
     return new_particles
 
@@ -132,11 +147,33 @@ def eval_sensor_model(sensor_data, particles, landmarks):
     weights = []
     
     '''your code here'''
+
+    for particle in particles:
+
+        all_meas_likelihood = 1.0
+
+        for i in range(len(ids)):
+
+            lm_id = ids[i]
+            meas_range = ranges[i]
+
+            lx = landmarks[lm_id][0]
+            ly = landmarks[lm_id][1]
+            px = particle['x']
+            py = particle['y']
+
+            meas_range_exp = np.sqrt((lx-px)**2 + (ly-py)**2)
+
+            meas_likelihood = scipy.stats.norm.pdf(meas_range, meas_range_exp, sigma_r)
+
+            all_meas_likelihood = all_meas_likelihood*meas_likelihood
+        
+        weights.append(all_meas_likelihood)
+    
+    normalizer = sum(weights)
+    weights = weights/normalizer
+
     '''***        ***'''
-
-
-
-
 
     #normalize weights
     normalizer = sum(weights)
@@ -151,21 +188,32 @@ def resample_particles(particles, weights):
     new_particles = []
 
     '''your code here'''
+    step = 1.0/(len(particles))
+
+    u = np.random.uniform(0,step)
+
+    c = weights[0]
+    i=0
+
+    for particle in particles:
+        while u>c:
+            i += 1
+            c += weights[i]
+        new_particles.append(particles[i])
+
+        u += step
     '''***        ***'''
-
-
-
-
 
     return new_particles
 
 def main():
     # implementation of a particle filter for robot pose estimation
 
-    print "Reading landmark positions"
-    landmarks = read_world("../data/world.dat")
+    print("Reading landmark positions")
+    # landmarks = read_world("../data/world.dat")
+    landmarks = read_world('./world.dat')
 
-    print "Reading sensor data"
+    print("Reading sensor data")
     sensor_readings = read_sensor_data("../data/sensor_data.dat")
 
     #initialize the particles
