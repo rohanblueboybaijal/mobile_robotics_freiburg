@@ -25,10 +25,12 @@ def discrete_filter(bel, d):
             bel0 = bel[x]
 
             if x < bel.shape[0]-1:
-                bel_prime[x] += 0.25*bel2 + 0.50*bel1 * 0.25*bel0
+                bel_prime[x] += 0.25*bel2 + 0.50*bel1 + 0.25*bel0
 
             elif x == bel.shape[0]-1:
                 bel_prime[x] += 0.25*bel2 + 0.75*bel1 + 1.00*bel0
+
+            #print(bel2, bel1, bel0, bel_prime[x])
     
     if d==-1:
         for x in range(20):
