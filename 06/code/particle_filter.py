@@ -211,7 +211,7 @@ def main():
 
     print("Reading landmark positions")
     # landmarks = read_world("../data/world.dat")
-    landmarks = read_world('./world.dat')
+    landmarks = read_world('../data/world.dat')
 
     print("Reading sensor data")
     sensor_readings = read_sensor_data("../data/sensor_data.dat")
@@ -221,7 +221,7 @@ def main():
     particles = initialize_particles(1000, map_limits)
 
     #run particle filter
-    for timestep in range(len(sensor_readings)/2):
+    for timestep in range(len(sensor_readings)//2):
 
         #plot the current state
         plot_state(particles, landmarks, map_limits)
