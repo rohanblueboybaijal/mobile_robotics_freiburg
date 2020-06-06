@@ -83,12 +83,12 @@ def prediction_step(odometry, mu, sigma):
     delta_rot2 = odometry['r2']
 
     '''your code here'''
-    Q = np.array([[0.2, 0.0, 0.0]
+    Q = np.array([[0.2, 0.0, 0.0],
                   [0.0, 0.2, 0.0],
                   [0.0, 0.0, 0.02]])
     
     # ideal motion
-    n_new = x + delta_trans*np.cos(theta + delta_rot1)
+    x_new = x + delta_trans*np.cos(theta + delta_rot1)
     y_new = y + delta_trans*np.sin(theta + delta_rot1)
     theta_new = theta + delta_rot1 + delta_rot2
 
@@ -147,7 +147,7 @@ def correction_step(sensor_data, mu, sigma, landmarks):
     R = 0.5*np.eye(len(ids))
 
     S = np.linalg.inv(np.dot((np.dot(H,sigma)),np.transpose(H)) + R)
-    K = np.dot(np.dot(sigma, np._transpose(H)), S)
+    K = np.dot(np.dot(sigma,np.transpose(H)), S)
 
     mu = mu + np.dot(K, np.array(Z) - np.array(expected_ranges))
     sigma = np.dot(np.eye(len(sigma)) - np.dot(K,H), sigma)
@@ -173,7 +173,7 @@ def main():
     map_limits = [-1, 12, -1, 10]
 
     #run kalman filter
-    for timestep in range(len(sensor_readings)/2):
+    for timestep in range(len(sensor_readings)//2):
 
         #plot the current state
         plot_state(mu, sigma, landmarks, map_limits)
